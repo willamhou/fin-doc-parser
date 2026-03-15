@@ -31,7 +31,7 @@ print(result["data"]["balance_sheet"]["total_assets"])  # 125000000.0
 
 ## Features
 
-- **9 document types** — financial statements, bank statements, business licenses, credit reports, tax invoices, fixed assets, lease contracts, shareholder info, property certs
+- **13 document types** — financial statements, bank statements, business licenses, audit reports, credit reports, shareholder info, financial notes, MD&A, guarantees, equity changes, tax invoices, and more
 - **Pluggable OCR** — PaddleOCR (local, free), Prismer (GPU service), or text-only extraction
 - **Pluggable LLM** — DeepSeek, OpenAI, or any OpenAI-compatible API (Ollama, vLLM, etc.)
 - **Bring your own client** — pass a pre-configured `LLMClient` instance directly
@@ -196,10 +196,14 @@ result = parse(
 | Business License | `business_license` | PDF, image | Company name, credit code, legal rep, scope |
 | Audit Report | `audit_report` | PDF | Opinion type, going concern, key audit matters, signatories |
 | Credit Report | `credit_report` | PDF | Credit lines, overdue records, utilization |
+| Shareholder Info | `shareholder_info` | PDF, image | Shareholder names, ratios, capital |
+| Financial Notes | `financial_notes` | PDF | Accounting policies, related party txns, contingent liabilities |
+| MD&A | `md_and_a` | PDF | Business overview, operating results, risk factors, outlook |
+| Guarantee Disclosure | `guarantee` | PDF | Guarantee summary, details, violation guarantees |
+| Equity Changes Stmt | `equity_changes_stmt` | PDF | Opening/closing balance, changes, profit distribution |
 | Tax Invoice | `tax_invoice` | PDF, image, Excel | Invoice items, amounts, tax rates |
 | Fixed Asset | `fixed_asset` | Excel | Asset list with depreciation |
 | Lease Contract | `lease_contract` | PDF | Terms, amounts, maturity dates |
-| Shareholder Info | `shareholder_info` | PDF, image | Shareholder names, ratios, capital |
 | Property Cert | `property_cert` | PDF, image | Owner, location, area, registration |
 | *(any other)* | `generic` | PDF, image, Excel | Auto-extracted key entities & numbers |
 
@@ -298,7 +302,7 @@ result = parse(
 
 Contributions welcome! Areas that need help:
 
-- [ ] More extractors (tax invoice, fixed asset, lease, property)
+- [ ] More extractors (tax invoice, fixed asset, lease, property, land cert)
 - [ ] Better prompt templates for higher extraction accuracy
 - [ ] More OCR backends (Surya, EasyOCR, Tesseract)
 - [ ] More LLM providers (Claude, Gemini, Kimi)

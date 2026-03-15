@@ -48,6 +48,34 @@ class TestDetectDocType:
         content = "审计意见：我们认为，财务报表在所有重大方面按照企业会计准则..."
         assert detect_doc_type(content, "report.pdf") == "audit_report"
 
+    def test_financial_notes_by_filename(self):
+        assert detect_doc_type("", "财务报表附注2024.pdf") == "financial_notes"
+
+    def test_financial_notes_by_content(self):
+        content = "附注：本公司采用的主要会计政策如下..."
+        assert detect_doc_type(content, "notes.pdf") == "financial_notes"
+
+    def test_md_and_a_by_filename(self):
+        assert detect_doc_type("", "管理层讨论与分析.pdf") == "md_and_a"
+
+    def test_md_and_a_by_content(self):
+        content = "经营讨论与分析：本报告期内公司营业收入..."
+        assert detect_doc_type(content, "report.pdf") == "md_and_a"
+
+    def test_guarantee_by_filename(self):
+        assert detect_doc_type("", "对外担保情况.pdf") == "guarantee"
+
+    def test_guarantee_by_content(self):
+        content = "担保明细：截至报告期末，公司对外担保余额..."
+        assert detect_doc_type(content, "doc.pdf") == "guarantee"
+
+    def test_equity_changes_by_filename(self):
+        assert detect_doc_type("", "权益变动表2024.pdf") == "equity_changes_stmt"
+
+    def test_equity_changes_by_content(self):
+        content = "所有者权益变动表：本期实收资本变动..."
+        assert detect_doc_type(content, "statement.pdf") == "equity_changes_stmt"
+
     def test_generic_fallback(self):
         assert detect_doc_type("some random content", "unknown.pdf") == "generic"
 

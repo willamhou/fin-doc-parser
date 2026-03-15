@@ -256,6 +256,186 @@ def mock_llm_shareholder():
 
 
 @pytest.fixture
+def mock_llm_financial_notes():
+    """MockLLMClient pre-loaded with financial notes response."""
+    return MockLLMClient(responses={
+        "附注": {
+            "company_name": "北京示例科技股份有限公司",
+            "fiscal_year_end": "2024-12-31",
+            "accounting_policies": {
+                "revenue_recognition": "在客户取得相关商品控制权时确认收入",
+                "bad_debt_provision": "账龄分析法与个别认定法结合",
+                "depreciation_method": "直线法，房屋建筑物20年，设备5-10年",
+                "policy_changes": [],
+            },
+            "related_party_transactions": [
+                {
+                    "party_name": "北京示例投资有限公司",
+                    "relationship": "母公司",
+                    "transaction_type": "采购",
+                    "amount": 15000000.0,
+                    "pricing_method": "市场价格",
+                },
+            ],
+            "contingent_liabilities": [
+                {
+                    "type": "未决诉讼",
+                    "description": "与供应商合同纠纷",
+                    "amount": 5000000.0,
+                    "probability": "可能",
+                },
+            ],
+            "pledged_assets": [
+                {
+                    "asset_type": "房屋建筑物",
+                    "book_value": 30000000.0,
+                    "pledge_purpose": "借款担保",
+                },
+            ],
+            "significant_estimates": [
+                {
+                    "item": "应收账款坏账准备",
+                    "method": "预期信用损失模型",
+                    "key_assumptions": "基于历史违约率和前瞻性信息",
+                },
+            ],
+            "subsequent_events": [],
+        },
+    })
+
+
+@pytest.fixture
+def mock_llm_mda():
+    """MockLLMClient pre-loaded with MD&A response."""
+    return MockLLMClient(responses={
+        "管理层讨论": {
+            "company_name": "北京示例科技股份有限公司",
+            "fiscal_year": "2024",
+            "business_overview": {
+                "main_business": "企业级SaaS软件研发与销售",
+                "industry": "软件和信息技术服务业",
+                "business_model": "订阅制SaaS收费",
+                "core_competitiveness": "自主研发的AI中台技术",
+            },
+            "operating_results": {
+                "revenue_change_pct": 25.3,
+                "net_income_change_pct": 18.7,
+                "revenue_drivers": "新客户增长及存量客户续费率提升",
+                "cost_drivers": "研发人员扩招导致人力成本增加",
+                "gross_margin_change": "毛利率同比提升2.1个百分点至68.5%",
+            },
+            "industry_analysis": {
+                "industry_trends": "企业数字化转型加速，SaaS渗透率持续提升",
+                "competitive_landscape": "行业集中度较低，竞争格局分散",
+                "regulatory_environment": "数据安全法实施，合规成本增加",
+            },
+            "risk_factors": [
+                {
+                    "category": "行业政策",
+                    "description": "数据安全监管趋严可能影响产品功能",
+                    "mitigation": "成立数据合规委员会，通过等保三级认证",
+                },
+                {
+                    "category": "经营管理",
+                    "description": "核心技术人员流失风险",
+                    "mitigation": "股权激励计划覆盖核心团队",
+                },
+            ],
+            "future_outlook": {
+                "development_strategy": "深耕行业垂直场景，拓展海外市场",
+                "business_plan": "2025年目标收入增长20%以上",
+                "capex_plan": "计划投入5000万元建设新数据中心",
+                "rd_plan": "研发投入占收入比例维持在15%以上",
+            },
+            "major_events": [],
+        },
+    })
+
+
+@pytest.fixture
+def mock_llm_guarantee():
+    """MockLLMClient pre-loaded with guarantee disclosure response."""
+    return MockLLMClient(responses={
+        "对外担保": {
+            "company_name": "北京示例科技股份有限公司",
+            "report_date": "2024-12-31",
+            "guarantee_summary": {
+                "total_guarantee_amount": 80000000.0,
+                "total_guarantee_to_net_assets_pct": 10.7,
+                "overdue_guarantee_amount": 0,
+                "guarantee_for_subsidiaries": 60000000.0,
+                "guarantee_for_shareholders": 0,
+                "guarantee_for_related_parties": 0,
+                "guarantee_for_others": 20000000.0,
+            },
+            "guarantee_details": [
+                {
+                    "guaranteed_party": "北京示例云计算有限公司",
+                    "relationship": "子公司",
+                    "guarantee_amount": 60000000.0,
+                    "guarantee_type": "连带责任保证",
+                    "start_date": "2024-03-15",
+                    "end_date": "2026-03-14",
+                    "is_completed": False,
+                    "is_overdue": False,
+                    "counter_guarantee": None,
+                },
+            ],
+            "violation_guarantees": [],
+        },
+    })
+
+
+@pytest.fixture
+def mock_llm_equity_changes():
+    """MockLLMClient pre-loaded with equity changes statement response."""
+    return MockLLMClient(responses={
+        "权益变动表": {
+            "company_name": "北京示例科技股份有限公司",
+            "report_period": "2024-12-31",
+            "currency": "CNY",
+            "opening_balance": {
+                "share_capital": 500000000.0,
+                "capital_reserve": 200000000.0,
+                "other_comprehensive_income": -5000000.0,
+                "special_reserve": None,
+                "surplus_reserve": 50000000.0,
+                "retained_earnings": 300000000.0,
+                "total_equity_parent": 1045000000.0,
+                "minority_interest": 15000000.0,
+                "total_equity": 1060000000.0,
+            },
+            "changes": {
+                "net_income": 125000000.0,
+                "other_comprehensive_income_change": 3000000.0,
+                "total_comprehensive_income": 128000000.0,
+                "share_capital_increase": None,
+                "capital_reserve_increase": None,
+                "profit_distribution": {
+                    "statutory_surplus_reserve": 12500000.0,
+                    "discretionary_surplus_reserve": None,
+                    "dividends_declared": 50000000.0,
+                    "dividend_per_share": 0.10,
+                },
+                "share_based_payment": 8000000.0,
+                "other_equity_changes": None,
+            },
+            "closing_balance": {
+                "share_capital": 500000000.0,
+                "capital_reserve": 208000000.0,
+                "other_comprehensive_income": -2000000.0,
+                "special_reserve": None,
+                "surplus_reserve": 62500000.0,
+                "retained_earnings": 362500000.0,
+                "total_equity_parent": 1131000000.0,
+                "minority_interest": 17000000.0,
+                "total_equity": 1148000000.0,
+            },
+        },
+    })
+
+
+@pytest.fixture
 def mock_llm_license():
     """MockLLMClient pre-loaded with business license response."""
     return MockLLMClient(responses={

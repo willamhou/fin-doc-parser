@@ -33,6 +33,22 @@ class TestRegistry:
         ext = get_extractor("shareholder_info")
         assert ext.doc_type == "shareholder_info"
 
+    def test_financial_notes_registered(self):
+        ext = get_extractor("financial_notes")
+        assert ext.doc_type == "financial_notes"
+
+    def test_md_and_a_registered(self):
+        ext = get_extractor("md_and_a")
+        assert ext.doc_type == "md_and_a"
+
+    def test_guarantee_registered(self):
+        ext = get_extractor("guarantee")
+        assert ext.doc_type == "guarantee"
+
+    def test_equity_changes_stmt_registered(self):
+        ext = get_extractor("equity_changes_stmt")
+        assert ext.doc_type == "equity_changes_stmt"
+
     def test_unknown_falls_back_to_generic(self):
         ext = get_extractor("nonexistent_type")
         assert isinstance(ext, GenericExtractor)
@@ -103,6 +119,50 @@ class TestExtractorOutput:
         assert result["equity_changes"] == []
         assert mock_llm_shareholder.call_count == 1
 
+    async def test_financial_notes_extract(self, mock_llm_financial_notes):
+        ext = get_extractor("financial_notes")
+        result = await ext.extract("附注内容...", mock_llm_financial_notes)
+        assert result["company_name"] == "北京示例科技股份有限公司"
+        assert len(result["related_party_transactions"]) == 1
+        assert result["related_party_transactions"][0]["amount"] == 15000000.0
+        assert len(result["contingent_liabilities"]) == 1
+        assert result["contingent_liabilities"][0]["probability"] == "可能"
+        assert len(result["pledged_assets"]) == 1
+        assert result["subsequent_events"] == []
+        assert mock_llm_financial_notes.call_count == 1
+
+    async def test_md_and_a_extract(self, mock_llm_mda):
+        ext = get_extractor("md_and_a")
+        result = await ext.extract("管理层讨论与分析...", mock_llm_mda)
+        assert result["company_name"] == "北京示例科技股份有限公司"
+        assert result["operating_results"]["revenue_change_pct"] == 25.3
+        assert result["operating_results"]["net_income_change_pct"] == 18.7
+        assert len(result["risk_factors"]) == 2
+        assert result["risk_factors"][0]["category"] == "行业政策"
+        assert result["future_outlook"]["capex_plan"] is not None
+        assert mock_llm_mda.call_count == 1
+
+    async def test_guarantee_extract(self, mock_llm_guarantee):
+        ext = get_extractor("guarantee")
+        result = await ext.extract("对外担保信息...", mock_llm_guarantee)
+        assert result["company_name"] == "北京示例科技股份有限公司"
+        assert result["guarantee_summary"]["total_guarantee_amount"] == 80000000.0
+        assert result["guarantee_summary"]["total_guarantee_to_net_assets_pct"] == 10.7
+        assert len(result["guarantee_details"]) == 1
+        assert result["guarantee_details"][0]["guarantee_type"] == "连带责任保证"
+        assert result["violation_guarantees"] == []
+        assert mock_llm_guarantee.call_count == 1
+
+    async def test_equity_changes_stmt_extract(self, mock_llm_equity_changes):
+        ext = get_extractor("equity_changes_stmt")
+        result = await ext.extract("权益变动表内容...", mock_llm_equity_changes)
+        assert result["company_name"] == "北京示例科技股份有限公司"
+        assert result["opening_balance"]["total_equity"] == 1060000000.0
+        assert result["changes"]["net_income"] == 125000000.0
+        assert result["changes"]["profit_distribution"]["dividends_declared"] == 50000000.0
+        assert result["closing_balance"]["total_equity"] == 1148000000.0
+        assert mock_llm_equity_changes.call_count == 1
+
     async def test_generic_extract(self, mock_llm):
         ext = get_extractor("generic")
         client = mock_llm()
@@ -151,11 +211,29 @@ class TestPromptTemplate:
         ext = get_extractor("generic")
         assert "{content}" in ext.prompt_template
 
+    def test_financial_notes_has_content_placeholder(self):
+        ext = get_extractor("financial_notes")
+        assert "{content}" in ext.prompt_template
+
+    def test_md_and_a_has_content_placeholder(self):
+        ext = get_extractor("md_and_a")
+        assert "{content}" in ext.prompt_template
+
+    def test_guarantee_has_content_placeholder(self):
+        ext = get_extractor("guarantee")
+        assert "{content}" in ext.prompt_template
+
+    def test_equity_changes_has_content_placeholder(self):
+        ext = get_extractor("equity_changes_stmt")
+        assert "{content}" in ext.prompt_template
+
     def test_prompt_renders_without_error(self):
         """All extractors' prompts should render with content= kwarg."""
         for doc_type in ["financial_statement", "bank_statement",
                          "business_license", "audit_report",
-                         "credit_report", "shareholder_info", "generic"]:
+                         "credit_report", "shareholder_info",
+                         "financial_notes", "md_and_a",
+                         "guarantee", "equity_changes_stmt", "generic"]:
             ext = get_extractor(doc_type)
             rendered = ext.prompt_template.format(content="test content 123")
             assert "test content 123" in rendered

@@ -13,12 +13,17 @@ _PDF_EXTENSIONS = {".pdf"}
 _FILENAME_HINTS: list[tuple[list[str], str]] = [
     # audit_report before financial_statement: "审计意见" content often contains "财务报表"
     (["审计报告", "audit_report", "审计意见"], "audit_report"),
+    # financial_notes before financial_statement: "财务报表附注" contains "财务报表"
+    (["财务报表附注", "报表附注", "financial_notes", "附注"], "financial_notes"),
     (
         ["资产负债", "利润表", "现金流", "财务报表", "balance", "income", "cash_flow"],
         "financial_statement",
     ),
     (["银行流水", "bank_statement", "bank_flow"], "bank_statement"),
     (["营业执照", "business_license"], "business_license"),
+    (["管理层讨论", "经营讨论", "md_and_a", "md&a"], "md_and_a"),
+    (["对外担保", "担保明细", "guarantee"], "guarantee"),
+    (["权益变动表", "所有者权益变动", "equity_changes"], "equity_changes_stmt"),
     (["征信", "credit_report"], "credit_report"),
     (["发票", "invoice"], "tax_invoice"),
     (["固定资产", "fixed_asset"], "fixed_asset"),
