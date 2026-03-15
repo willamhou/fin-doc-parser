@@ -38,6 +38,7 @@ print(result["data"]["balance_sheet"]["total_assets"])  # 125000000.0
 - **Excel support** — xlsx, xls, csv with automatic markdown conversion
 - **Auto-detection** — file type and document type detected from filename and content
 - **Generic fallback** — unknown document types get a best-effort extraction
+- **Multi-period comparison** — `compare_periods()` computes period-over-period changes with significant change detection
 - **Async-first** — `parse_async()` for high-throughput pipelines
 - **Minimal core** — only `httpx` required; OCR, Excel, PDF are optional
 
@@ -185,6 +186,31 @@ result = parse(
 )
 ```
 
+### 多期对比
+
+```python
+from findocparser import parse, compare_periods
+
+# 解析两期财报
+r2023 = parse("财务报表2023.pdf")
+r2024 = parse("财务报表2024.pdf")
+
+# 自动计算同比变动
+diff = compare_periods([r2023, r2024])
+
+# 查看资产变动
+assets = diff["comparisons"][0]["balance_sheet"]["total_assets"]
+print(f"总资产变动: {assets['change_pct']:+.1f}%")  # +25.0%
+
+# 查看重大变动（默认 ±20%）
+for item in diff["significant_changes"]:
+    print(f"{item['field']}: {item['change_pct']:+.1f}%")
+
+# 三期趋势分析
+r2022 = parse("财务报表2022.pdf")
+diff = compare_periods([r2022, r2023, r2024])  # 返回 2 组逐期对比
+```
+
 ---
 
 ## Supported Document Types
@@ -246,6 +272,70 @@ parse("document.pdf")
 Returns `dict` with keys: `doc_type`, `file_name`, `file_type`, `data`.
 
 ### `parse_async(...)` — same parameters, returns coroutine.
+
+### `compare_periods(results, *, significant_change_pct=20.0)`
+
+Compare `parse()` results across multiple reporting periods.
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `results` | `list[dict]` | *required* | List of `parse()` results, ordered earliest → latest |
+| `significant_change_pct` | `float` | `20.0` | Threshold (%) for flagging significant changes |
+
+Returns `dict` with keys: `doc_type`, `period_count`, `periods`, `comparisons`, `significant_changes`.
+
+#### Two-period comparison
+
+```python
+from findocparser import parse, compare_periods
+
+r2023 = parse("财务报表2023.pdf")
+r2024 = parse("财务报表2024.pdf")
+diff = compare_periods([r2023, r2024])
+
+# Numeric fields get absolute and percentage changes
+assets = diff["comparisons"][0]["balance_sheet"]["total_assets"]
+print(assets)
+# {"previous": 100000000, "current": 125000000, "change": 25000000, "change_pct": 25.0}
+
+# String fields show before/after when different
+opinion = diff["comparisons"][0]["opinion_type"]
+# {"previous": "标准无保留意见", "current": "保留意见"}
+
+# List fields show count changes
+txns = diff["comparisons"][0]["transactions"]
+# {"previous_count": 120, "current_count": 185}
+```
+
+#### Significant change detection
+
+```python
+# Flag fields with ≥20% change (default threshold)
+for item in diff["significant_changes"]:
+    print(f"{item['field']}: {item['change_pct']:+.1f}%")
+# balance_sheet.inventory: +60.0%
+# income_statement.net_income: -35.2%
+
+# Custom threshold (e.g., 10%)
+diff = compare_periods([r2023, r2024], significant_change_pct=10.0)
+```
+
+#### Three-period trend
+
+```python
+r2022 = parse("财务报表2022.pdf")
+r2023 = parse("财务报表2023.pdf")
+r2024 = parse("财务报表2024.pdf")
+
+diff = compare_periods([r2022, r2023, r2024])
+print(diff["period_count"])  # 3
+print(len(diff["comparisons"]))  # 2 (pairwise: 2022→2023, 2023→2024)
+
+# Track revenue trend across 3 years
+for comp in diff["comparisons"]:
+    rev = comp["income_statement"]["revenue"]
+    print(f"{comp['from_period']} → {comp['to_period']}: {rev['change_pct']:+.1f}%")
+```
 
 ## Configuration
 
