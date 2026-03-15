@@ -53,8 +53,8 @@ def _text_extract(file_path: Path) -> str:
         return "\n\n".join(pages)
     except ImportError:
         raise ImportError(
-            "PyMuPDF is required for text extraction. "
-            "Install with: pip install pymupdf"
+            "PyMuPDF is required for PDF text extraction. "
+            "Install with: pip install 'fin-doc-parser[pdf]'"
         )
 
 

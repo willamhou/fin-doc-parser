@@ -7,7 +7,7 @@
 Extract structured JSON from financial statements, bank statements, invoices, business licenses, and more.
 
 [![PyPI](https://img.shields.io/pypi/v/fin-doc-parser.svg)](https://pypi.org/project/fin-doc-parser/)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 
 [English](#quick-start) | [中文](#快速开始)
@@ -33,11 +33,13 @@ print(result["data"]["balance_sheet"]["total_assets"])  # 125000000.0
 
 - **9 document types** — financial statements, bank statements, business licenses, credit reports, tax invoices, fixed assets, lease contracts, shareholder info, property certs
 - **Pluggable OCR** — PaddleOCR (local, free), Prismer (GPU service), or text-only extraction
-- **Pluggable LLM** — OpenAI, DeepSeek, or any OpenAI-compatible API
+- **Pluggable LLM** — DeepSeek, OpenAI, or any OpenAI-compatible API (Ollama, vLLM, etc.)
+- **Bring your own client** — pass a pre-configured `LLMClient` instance directly
 - **Excel support** — xlsx, xls, csv with automatic markdown conversion
 - **Auto-detection** — file type and document type detected from filename and content
 - **Generic fallback** — unknown document types get a best-effort extraction
 - **Async-first** — `parse_async()` for high-throughput pipelines
+- **Minimal core** — only `httpx` required; OCR, Excel, PDF are optional
 
 ## Quick Start
 
@@ -46,11 +48,14 @@ print(result["data"]["balance_sheet"]["total_assets"])  # 125000000.0
 ```bash
 pip install fin-doc-parser
 
-# With local OCR (no external service needed)
-pip install "fin-doc-parser[ocr]"
+# With Excel support (xlsx/xls)
+pip install "fin-doc-parser[excel]"
 
-# With LLM extraction
-pip install "fin-doc-parser[llm]"
+# With PDF text extraction (PyMuPDF)
+pip install "fin-doc-parser[pdf]"
+
+# With local OCR (PaddleOCR, no external service)
+pip install "fin-doc-parser[ocr]"
 
 # Everything
 pip install "fin-doc-parser[all]"
@@ -106,6 +111,29 @@ async def main():
 asyncio.run(main())
 ```
 
+### Custom LLM endpoint
+
+```python
+from findocparser import parse, parse_async, OpenAIClient
+
+# Option 1: Pass config through parse()
+result = parse(
+    "report.pdf",
+    llm_base_url="http://localhost:11434/v1",  # Ollama
+    llm_api_key="ollama",
+    llm_model="qwen2.5:14b",
+)
+
+# Option 2: Bring your own LLM client
+client = OpenAIClient(
+    provider="openai",
+    base_url="http://localhost:11434/v1",
+    api_key="ollama",
+    model="qwen2.5:14b",
+)
+result = parse("report.pdf", llm_client=client)
+```
+
 ---
 
 ## 快速开始
@@ -115,11 +143,14 @@ asyncio.run(main())
 ```bash
 pip install fin-doc-parser
 
+# 带 Excel 支持
+pip install "fin-doc-parser[excel]"
+
+# 带 PDF 文本提取
+pip install "fin-doc-parser[pdf]"
+
 # 带本地 OCR（无需外部服务）
 pip install "fin-doc-parser[ocr]"
-
-# 带 LLM 提取
-pip install "fin-doc-parser[llm]"
 ```
 
 ### 配置 API 密钥
@@ -144,6 +175,14 @@ print(result["data"]["transactions"])
 # 解析营业执照（图片）
 result = parse("营业执照.jpg")
 print(result["data"]["company_name"])
+
+# 自定义 LLM 端点（如 Ollama）
+result = parse(
+    "report.pdf",
+    llm_base_url="http://localhost:11434/v1",
+    llm_api_key="ollama",
+    llm_model="qwen2.5:14b",
+)
 ```
 
 ---
@@ -171,18 +210,37 @@ parse("document.pdf")
     ├─ detect_file_type()      →  pdf / image / excel
     │
     ├─ OCR or Excel Parser     →  raw text (markdown)
-    │   ├─ PaddleOCR (local)
-    │   ├─ Prismer (GPU service)
-    │   ├─ PyMuPDF (text-only)
-    │   └─ openpyxl / xlrd
+    │   ├─ PaddleOCR (local)        [ocr]
+    │   ├─ Prismer (GPU service)    env: PRISMER_OCR_BASE_URL
+    │   ├─ PyMuPDF (text-only)      [pdf]
+    │   └─ openpyxl / xlrd          [excel]
     │
     ├─ detect_doc_type()       →  financial_statement / bank_statement / ...
     │
     └─ LLM Extractor           →  structured JSON
+        ├─ DeepSeek (default)
         ├─ OpenAI
-        ├─ DeepSeek
         └─ Any OpenAI-compatible API
 ```
+
+## API Reference
+
+### `parse(file_path, **kwargs)`
+
+| Parameter | Type | Default | Description |
+|---|---|---|---|
+| `file_path` | `str \| Path` | *required* | Path to document |
+| `doc_type` | `str \| None` | `None` | Document type (auto-detect if None) |
+| `llm_provider` | `str` | `"deepseek"` | LLM provider name |
+| `llm_client` | `LLMClient \| None` | `None` | Pre-configured client (overrides provider) |
+| `llm_base_url` | `str \| None` | `None` | Override provider base URL |
+| `llm_api_key` | `str \| None` | `None` | Override API key |
+| `llm_model` | `str \| None` | `None` | Override model name |
+| `ocr_backend` | `str` | `"auto"` | OCR backend: auto, paddleocr, prismer, none |
+
+Returns `dict` with keys: `doc_type`, `file_name`, `file_type`, `data`.
+
+### `parse_async(...)` — same parameters, returns coroutine.
 
 ## Configuration
 
@@ -205,31 +263,11 @@ parse("doc.pdf", ocr_backend="none")
 ### LLM Provider
 
 ```python
-# DeepSeek (recommended for Chinese documents)
+# DeepSeek (default, recommended for Chinese documents)
 parse("doc.pdf", llm_provider="deepseek")
 
 # OpenAI
 parse("doc.pdf", llm_provider="openai")
-```
-
-### Custom LLM endpoint
-
-```python
-from findocparser.llm.openai_client import OpenAIClient
-from findocparser.extractors.registry import get_extractor
-from findocparser.parsers.excel import parse_excel
-
-# Use any OpenAI-compatible API
-client = OpenAIClient(
-    provider="openai",
-    base_url="http://localhost:11434/v1",  # e.g. Ollama
-    api_key="ollama",
-    model="qwen2.5:14b",
-)
-
-content = parse_excel("data.xlsx")
-extractor = get_extractor("financial_statement")
-result = await extractor.extract(content, client)
 ```
 
 ## Contributing
@@ -241,7 +279,6 @@ Contributions welcome! Areas that need help:
 - [ ] More OCR backends (Surya, EasyOCR, Tesseract)
 - [ ] More LLM providers (Claude, Gemini, Kimi)
 - [ ] Test coverage
-- [ ] Documentation
 
 ```bash
 git clone https://github.com/willamhou/fin-doc-parser.git

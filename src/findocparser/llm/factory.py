@@ -5,12 +5,13 @@ from __future__ import annotations
 from findocparser.llm.base import LLMClient
 
 
-def get_llm_client(provider: str = "openai", **kwargs) -> LLMClient:
+def get_llm_client(provider: str = "deepseek", **kwargs) -> LLMClient:
     """Create an LLM client for the given provider.
 
     Args:
-        provider: LLM provider name. Supported: "openai", "deepseek", "gemini".
-        **kwargs: Additional provider-specific configuration.
+        provider: LLM provider name. Supported: "deepseek", "openai".
+        **kwargs: Passed to the client constructor (``api_key``,
+            ``base_url``, ``model``).
 
     Returns:
         An LLM client instance.
@@ -20,6 +21,5 @@ def get_llm_client(provider: str = "openai", **kwargs) -> LLMClient:
 
         return OpenAIClient(provider=provider, **kwargs)
     raise ValueError(
-        f"Unknown LLM provider: {provider}. "
-        f"Supported: openai, deepseek"
+        f"Unknown LLM provider: {provider}. Supported: deepseek, openai"
     )

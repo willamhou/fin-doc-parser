@@ -24,7 +24,13 @@ def parse_excel(file_path: Path) -> str:
 
 def _parse_xlsx(file_path: Path) -> str:
     """Parse .xlsx file using openpyxl."""
-    from openpyxl import load_workbook
+    try:
+        from openpyxl import load_workbook
+    except ImportError:
+        raise ImportError(
+            "openpyxl is required for .xlsx files. "
+            "Install with: pip install 'fin-doc-parser[excel]'"
+        )
 
     wb = load_workbook(file_path, read_only=True, data_only=True)
     parts: list[str] = []
@@ -56,7 +62,13 @@ def _parse_xlsx(file_path: Path) -> str:
 
 def _parse_xls(file_path: Path) -> str:
     """Parse .xls file using xlrd."""
-    import xlrd
+    try:
+        import xlrd
+    except ImportError:
+        raise ImportError(
+            "xlrd is required for .xls files. "
+            "Install with: pip install 'fin-doc-parser[excel]'"
+        )
 
     wb = xlrd.open_workbook(str(file_path))
     parts: list[str] = []

@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from findocparser.detect import detect_doc_type, detect_file_type
+
+if TYPE_CHECKING:
+    from findocparser.llm.base import LLMClient
 
 
 async def run_pipeline(
@@ -13,6 +16,10 @@ async def run_pipeline(
     doc_type: str | None,
     llm_provider: str,
     ocr_backend: str,
+    llm_client: LLMClient | None = None,
+    llm_base_url: str | None = None,
+    llm_api_key: str | None = None,
+    llm_model: str | None = None,
 ) -> dict[str, Any]:
     """Run the full parsing pipeline.
 
@@ -47,9 +54,17 @@ async def run_pipeline(
 
     extractor = get_extractor(doc_type)
 
-    from findocparser.llm.factory import get_llm_client
+    if llm_client is None:
+        from findocparser.llm.factory import get_llm_client
 
-    llm_client = get_llm_client(llm_provider)
+        kwargs: dict[str, Any] = {}
+        if llm_base_url:
+            kwargs["base_url"] = llm_base_url
+        if llm_api_key:
+            kwargs["api_key"] = llm_api_key
+        if llm_model:
+            kwargs["model"] = llm_model
+        llm_client = get_llm_client(llm_provider, **kwargs)
 
     result = await extractor.extract(raw_content, llm_client)
 

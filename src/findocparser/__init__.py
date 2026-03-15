@@ -3,5 +3,7 @@
 __version__ = "0.1.0"
 
 from findocparser.api import parse, parse_async
+from findocparser.llm.base import LLMClient
+from findocparser.llm.openai_client import OpenAIClient
 
-__all__ = ["parse", "parse_async"]
+__all__ = ["LLMClient", "OpenAIClient", "parse", "parse_async"]
