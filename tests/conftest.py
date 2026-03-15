@@ -124,6 +124,100 @@ def mock_llm_bank():
 
 
 @pytest.fixture
+def mock_llm_credit():
+    """MockLLMClient pre-loaded with credit report response."""
+    return MockLLMClient(responses={
+        "征信报告": {
+            "company_name": "北京示例科技有限公司",
+            "credit_code": "91110108MA01XXXXX",
+            "query_date": "2024-06-15",
+            "credit_score": 720,
+            "credit_level": "AA",
+            "outstanding_loans": {
+                "total_count": 3,
+                "total_amount": 5000000.0,
+                "normal_count": 2,
+                "overdue_count": 1,
+                "overdue_amount": 200000.0,
+            },
+            "credit_cards": {
+                "total_count": 2,
+                "total_limit": 500000.0,
+                "used_amount": 150000.0,
+                "overdue_count": 0,
+                "overdue_amount": 0,
+            },
+            "guarantees": {
+                "total_count": 1,
+                "total_amount": 1000000.0,
+            },
+            "overdue_records": [
+                {
+                    "type": "贷款",
+                    "institution": "中国银行",
+                    "amount": 200000.0,
+                    "overdue_days": 30,
+                    "status": "已结清",
+                },
+            ],
+            "query_records": [
+                {
+                    "date": "2024-06-01",
+                    "institution": "工商银行",
+                    "reason": "贷后管理",
+                },
+            ],
+            "public_records": {
+                "tax_arrears": 0,
+                "civil_judgments": 0,
+                "enforcements": 0,
+            },
+        },
+    })
+
+
+@pytest.fixture
+def mock_llm_shareholder():
+    """MockLLMClient pre-loaded with shareholder info response."""
+    return MockLLMClient(responses={
+        "股东信息": {
+            "company_name": "北京示例科技有限公司",
+            "registered_capital": 1000,
+            "paid_in_capital": 1000,
+            "currency": "CNY",
+            "shareholders": [
+                {
+                    "name": "张三",
+                    "type": "自然人",
+                    "id_number": "110101199001011234",
+                    "subscribed_amount": 600,
+                    "paid_in_amount": 600,
+                    "ownership_pct": 60.0,
+                    "subscription_date": "2020-01-15",
+                },
+                {
+                    "name": "深圳投资有限公司",
+                    "type": "法人",
+                    "id_number": "91440300MA5XXXXXX",
+                    "subscribed_amount": 400,
+                    "paid_in_amount": 400,
+                    "ownership_pct": 40.0,
+                    "subscription_date": "2020-01-15",
+                },
+            ],
+            "actual_controller": {
+                "name": "张三",
+                "id_number": "110101199001011234",
+                "control_pct": 60.0,
+                "control_path": "直接持股60%",
+            },
+            "equity_pledges": [],
+            "equity_changes": [],
+        },
+    })
+
+
+@pytest.fixture
 def mock_llm_license():
     """MockLLMClient pre-loaded with business license response."""
     return MockLLMClient(responses={
