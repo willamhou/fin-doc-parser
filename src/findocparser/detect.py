@@ -11,6 +11,8 @@ _PDF_EXTENSIONS = {".pdf"}
 
 # Filename keyword → document type mapping
 _FILENAME_HINTS: list[tuple[list[str], str]] = [
+    # audit_report before financial_statement: "审计意见" content often contains "财务报表"
+    (["审计报告", "audit_report", "审计意见"], "audit_report"),
     (
         ["资产负债", "利润表", "现金流", "财务报表", "balance", "income", "cash_flow"],
         "financial_statement",

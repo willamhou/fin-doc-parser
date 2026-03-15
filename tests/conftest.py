@@ -124,6 +124,44 @@ def mock_llm_bank():
 
 
 @pytest.fixture
+def mock_llm_audit():
+    """MockLLMClient pre-loaded with audit report response."""
+    return MockLLMClient(responses={
+        "审计报告": {
+            "audit_firm": "普华永道中天会计师事务所",
+            "report_date": "2025-03-28",
+            "report_number": "普华永道中天审字(2025)第12345号",
+            "company_name": "北京示例科技股份有限公司",
+            "fiscal_year_end": "2024-12-31",
+            "opinion_type": "标准无保留意见",
+            "opinion_basis": "我们按照中国注册会计师审计准则的规定执行了审计工作。",
+            "going_concern": {
+                "has_uncertainty": False,
+                "description": None,
+            },
+            "key_audit_matters": [
+                {
+                    "title": "收入确认",
+                    "description": "公司2024年度营业收入为20亿元，收入确认涉及重大管理层判断。",
+                    "audit_response": "我们评价了收入确认相关的内部控制，对收入交易执行了细节测试。",
+                },
+                {
+                    "title": "应收账款坏账准备",
+                    "description": "截至2024年12月31日应收账款余额为1.2亿元，坏账准备计提涉及管理层估计。",
+                    "audit_response": "我们评价了管理层采用的预期信用损失模型及关键假设。",
+                },
+            ],
+            "emphasis_of_matter": [],
+            "other_matters": None,
+            "signatories": [
+                {"name": "李明", "cpa_number": "110XXXXXXX01"},
+                {"name": "王芳", "cpa_number": "110XXXXXXX02"},
+            ],
+        },
+    })
+
+
+@pytest.fixture
 def mock_llm_credit():
     """MockLLMClient pre-loaded with credit report response."""
     return MockLLMClient(responses={

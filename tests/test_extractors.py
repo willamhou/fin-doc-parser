@@ -21,6 +21,10 @@ class TestRegistry:
         ext = get_extractor("business_license")
         assert ext.doc_type == "business_license"
 
+    def test_audit_report_registered(self):
+        ext = get_extractor("audit_report")
+        assert ext.doc_type == "audit_report"
+
     def test_credit_report_registered(self):
         ext = get_extractor("credit_report")
         assert ext.doc_type == "credit_report"
@@ -57,6 +61,18 @@ class TestExtractorOutput:
         result = await ext.extract("营业执照内容...", mock_llm_license)
         assert result["company_name"] == "北京示例科技有限公司"
         assert result["unified_social_credit_code"] == "91110108MA01XXXXX"
+
+    async def test_audit_report_extract(self, mock_llm_audit):
+        ext = get_extractor("audit_report")
+        result = await ext.extract("审计报告内容...", mock_llm_audit)
+        assert result["audit_firm"] == "普华永道中天会计师事务所"
+        assert result["opinion_type"] == "标准无保留意见"
+        assert result["going_concern"]["has_uncertainty"] is False
+        assert len(result["key_audit_matters"]) == 2
+        assert result["key_audit_matters"][0]["title"] == "收入确认"
+        assert result["emphasis_of_matter"] == []
+        assert len(result["signatories"]) == 2
+        assert mock_llm_audit.call_count == 1
 
     async def test_credit_report_extract(self, mock_llm_credit):
         ext = get_extractor("credit_report")
@@ -119,6 +135,10 @@ class TestPromptTemplate:
         ext = get_extractor("business_license")
         assert "{content}" in ext.prompt_template
 
+    def test_audit_report_has_content_placeholder(self):
+        ext = get_extractor("audit_report")
+        assert "{content}" in ext.prompt_template
+
     def test_credit_report_has_content_placeholder(self):
         ext = get_extractor("credit_report")
         assert "{content}" in ext.prompt_template
@@ -134,8 +154,8 @@ class TestPromptTemplate:
     def test_prompt_renders_without_error(self):
         """All extractors' prompts should render with content= kwarg."""
         for doc_type in ["financial_statement", "bank_statement",
-                         "business_license", "credit_report",
-                         "shareholder_info", "generic"]:
+                         "business_license", "audit_report",
+                         "credit_report", "shareholder_info", "generic"]:
             ext = get_extractor(doc_type)
             rendered = ext.prompt_template.format(content="test content 123")
             assert "test content 123" in rendered

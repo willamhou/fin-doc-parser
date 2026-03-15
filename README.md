@@ -194,6 +194,7 @@ result = parse(
 | Financial Statement | `financial_statement` | PDF, image, Excel | Balance sheet, income statement, cash flow |
 | Bank Statement | `bank_statement` | PDF, image | Transaction list with counterparty & amounts |
 | Business License | `business_license` | PDF, image | Company name, credit code, legal rep, scope |
+| Audit Report | `audit_report` | PDF | Opinion type, going concern, key audit matters, signatories |
 | Credit Report | `credit_report` | PDF | Credit lines, overdue records, utilization |
 | Tax Invoice | `tax_invoice` | PDF, image, Excel | Invoice items, amounts, tax rates |
 | Fixed Asset | `fixed_asset` | Excel | Asset list with depreciation |
@@ -270,11 +271,34 @@ parse("doc.pdf", llm_provider="deepseek")
 parse("doc.pdf", llm_provider="openai")
 ```
 
+## Privacy & Data Security
+
+> **Important:** Document content is sent to the configured LLM API (DeepSeek, OpenAI, etc.) for structured extraction. This includes any PII present in the documents — ID numbers, bank account numbers, financial figures, credit records, etc.
+
+**For sensitive documents** (credit reports, bank statements, shareholder info with ID numbers):
+
+```python
+# Use a self-hosted model to keep data on-premise
+result = parse(
+    "征信报告.pdf",
+    llm_base_url="http://your-vllm-server:8000/v1",  # Self-hosted
+    llm_api_key="local",
+    llm_model="Qwen/Qwen2.5-14B",
+)
+```
+
+**Recommendations:**
+- Use **self-hosted LLM** (Ollama, vLLM, TGI) for documents containing PII
+- Review your LLM provider's data retention policy before processing sensitive data
+- In China, processing credit reports and ID numbers via cloud APIs may conflict with the **Personal Information Protection Law (个人信息保护法)** and **Regulation on Credit Information Industry (征信业管理条例)**
+
+---
+
 ## Contributing
 
 Contributions welcome! Areas that need help:
 
-- [ ] More extractors (credit report, tax invoice, fixed asset, lease, shareholder, property)
+- [ ] More extractors (tax invoice, fixed asset, lease, property)
 - [ ] Better prompt templates for higher extraction accuracy
 - [ ] More OCR backends (Surya, EasyOCR, Tesseract)
 - [ ] More LLM providers (Claude, Gemini, Kimi)

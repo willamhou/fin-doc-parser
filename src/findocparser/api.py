@@ -22,6 +22,14 @@ def parse(
 ) -> dict[str, Any]:
     """Parse a financial document and return structured data.
 
+    .. warning:: **Privacy Notice**
+
+        Document content (including PII such as ID numbers, account numbers,
+        and financial data) is sent to the configured LLM API for extraction.
+        When processing sensitive documents (credit reports, bank statements,
+        shareholder info), consider using a **self-hosted model** via
+        ``llm_base_url`` (e.g. Ollama, vLLM) instead of cloud APIs.
+
     Args:
         file_path: Path to the document (PDF, image, or Excel file).
         doc_type: Document type hint. If None, auto-detect.

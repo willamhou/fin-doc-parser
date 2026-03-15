@@ -39,6 +39,7 @@ def _ensure_registered() -> None:
         return
     _registered = True
 
+    import findocparser.extractors.audit_report  # noqa: F401
     import findocparser.extractors.bank_statement  # noqa: F401
     import findocparser.extractors.business_license  # noqa: F401
     import findocparser.extractors.credit_report  # noqa: F401
