@@ -2,20 +2,19 @@
 
 import asyncio
 
-from findocparser import OpenAIClient, parse_async
+from findocparser import OpenAIClient, parse, parse_async
 from findocparser.extractors.registry import get_extractor
 from findocparser.parsers.excel import parse_excel
 
-# --- Option 1: Pass config through parse() ---
+# --- Option 1: Pass config through parse() (sync) ---
 
-result = parse_async(
-    "report.pdf",
-    llm_provider="openai",          # uses OpenAI-compatible client
-    llm_base_url="http://localhost:11434/v1",   # Ollama
-    llm_api_key="ollama",
-    llm_model="qwen2.5:14b",
-)
-# asyncio.run(result)
+# result = parse(
+#     "report.pdf",
+#     llm_base_url="http://localhost:11434/v1",  # Ollama
+#     llm_api_key="ollama",
+#     llm_model="qwen2.5:14b",
+# )
+# print(result["data"])
 
 
 # --- Option 2: Bring your own LLM client ---

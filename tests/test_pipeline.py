@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 
@@ -81,6 +79,13 @@ class TestPipelineFileNotFound:
         docx.write_text("test")
         with pytest.raises(ValueError, match="Unsupported file type"):
             await parse_async(docx, llm_client=mock_llm())
+
+    async def test_parse_sync_in_async_context_raises(self, tmp_csv, mock_llm):
+        """parse() should raise RuntimeError when called from async context."""
+        from findocparser.api import parse
+
+        with pytest.raises(RuntimeError, match="cannot be called from an async context"):
+            parse(tmp_csv, llm_client=mock_llm())
 
 
 class TestPipelineReturnShape:

@@ -32,6 +32,15 @@ async def run_pipeline(
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: {file_path}")
 
+    # Guard against excessively large files (default 100 MB)
+    max_size = 100 * 1024 * 1024
+    file_size = file_path.stat().st_size
+    if file_size > max_size:
+        raise ValueError(
+            f"File too large: {file_size:,} bytes (max {max_size:,}). "
+            f"Split the document or use a streaming approach."
+        )
+
     # Step 1: Detect file type
     file_type = detect_file_type(file_path)
 

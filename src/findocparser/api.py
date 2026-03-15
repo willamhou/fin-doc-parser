@@ -41,6 +41,16 @@ def parse(
     """
     import asyncio
 
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        pass  # No running loop — safe to call asyncio.run()
+    else:
+        raise RuntimeError(
+            "parse() cannot be called from an async context (e.g. Jupyter, FastAPI). "
+            "Use 'await parse_async(...)' instead."
+        )
+
     return asyncio.run(
         parse_async(
             file_path,

@@ -2,9 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
-from findocparser.extractors.base import BaseExtractor
 from findocparser.extractors.generic import GenericExtractor
 from findocparser.extractors.registry import get_extractor
 
@@ -58,6 +55,16 @@ class TestExtractorOutput:
         client = mock_llm()
         result = await ext.extract("一些未知文档内容", client)
         assert "summary" in result or "document_type" in result
+
+    async def test_content_truncation(self, mock_llm):
+        """Content exceeding max_content_chars should be truncated."""
+        ext = get_extractor("generic")
+        client = mock_llm()
+        big_content = "A" * 100_000
+        await ext.extract(big_content, client, max_content_chars=1000)
+        # Verify the prompt was truncated
+        assert len(client.last_prompt) < 100_000
+        assert "[... content truncated ...]" in client.last_prompt
 
 
 class TestPromptTemplate:

@@ -26,11 +26,11 @@ def _parse_xlsx(file_path: Path) -> str:
     """Parse .xlsx file using openpyxl."""
     try:
         from openpyxl import load_workbook
-    except ImportError:
+    except ImportError as err:
         raise ImportError(
             "openpyxl is required for .xlsx files. "
             "Install with: pip install 'fin-doc-parser[excel]'"
-        )
+        ) from err
 
     wb = load_workbook(file_path, read_only=True, data_only=True)
     parts: list[str] = []
@@ -64,11 +64,11 @@ def _parse_xls(file_path: Path) -> str:
     """Parse .xls file using xlrd."""
     try:
         import xlrd
-    except ImportError:
+    except ImportError as err:
         raise ImportError(
             "xlrd is required for .xls files. "
             "Install with: pip install 'fin-doc-parser[excel]'"
-        )
+        ) from err
 
     wb = xlrd.open_workbook(str(file_path))
     parts: list[str] = []
@@ -94,19 +94,31 @@ def _parse_xls(file_path: Path) -> str:
     return "\n".join(parts)
 
 
+_CSV_ENCODINGS = ("utf-8-sig", "gbk", "gb2312", "latin-1")
+
+
 def _parse_csv(file_path: Path) -> str:
-    """Parse .csv file."""
+    """Parse .csv file with multi-encoding fallback."""
     import csv
 
-    parts: list[str] = ["## CSV\n"]
-
-    with open(file_path, newline="", encoding="utf-8-sig") as f:
-        reader = csv.reader(f)
-        rows = list(reader)
+    for encoding in _CSV_ENCODINGS:
+        try:
+            with open(file_path, newline="", encoding=encoding) as f:
+                reader = csv.reader(f)
+                rows = list(reader)
+            break
+        except UnicodeDecodeError:
+            continue
+    else:
+        raise ValueError(
+            f"Cannot decode CSV file {file_path.name}. "
+            f"Tried encodings: {', '.join(_CSV_ENCODINGS)}"
+        )
 
     if not rows:
         return "(empty)"
 
+    parts: list[str] = ["## CSV\n"]
     header = rows[0]
     parts.append("| " + " | ".join(header) + " |")
     parts.append("| " + " | ".join(["---"] * len(header)) + " |")

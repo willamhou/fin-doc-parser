@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import json
-
 import pytest
 
 from findocparser.llm.base import LLMClient
@@ -20,7 +18,7 @@ class TestOpenAIClientInit:
 
     def test_accepts_explicit_api_key(self):
         client = OpenAIClient(provider="openai", api_key="test-key")
-        assert client.api_key == "test-key"
+        assert client._api_key == "test-key"
         assert client.model == "gpt-4o-mini"
         assert "openai.com" in client.base_url
 
@@ -42,7 +40,18 @@ class TestOpenAIClientInit:
     def test_env_key_resolution(self, monkeypatch):
         monkeypatch.setenv("DEEPSEEK_API_KEY", "env-key-123")
         client = OpenAIClient(provider="deepseek")
-        assert client.api_key == "env-key-123"
+        assert client._api_key == "env-key-123"
+
+    def test_repr_does_not_leak_api_key(self):
+        client = OpenAIClient(provider="openai", api_key="sk-secret-123")
+        r = repr(client)
+        assert "sk-secret-123" not in r
+        assert "OpenAIClient" in r
+
+    def test_api_key_not_in_vars(self):
+        client = OpenAIClient(provider="openai", api_key="sk-secret-123")
+        public_attrs = {k for k in vars(client) if not k.startswith("_")}
+        assert "api_key" not in public_attrs
 
 
 class TestParseJson:
@@ -65,6 +74,11 @@ class TestParseJson:
         result = OpenAIClient._parse_json(text)
         assert "parse_error" in result
         assert result["raw_response"] == text
+
+    def test_json_with_trailing_text(self):
+        """Balanced brace parser should not be confused by trailing braces."""
+        text = 'Result: {"a": 1, "b": {"c": 2}} and some } trailing text'
+        assert OpenAIClient._parse_json(text) == {"a": 1, "b": {"c": 2}}
 
 
 class TestProtocolCompliance:

@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import pytest
 
 
@@ -52,9 +50,9 @@ class TestCSVParser:
         from findocparser.parsers.excel import parse_excel
 
         result = parse_excel(tmp_csv)
-        lines = [l for l in result.split("\n") if l.strip()]
+        lines = [line for line in result.split("\n") if line.strip()]
         # Should have header separator with ---
-        separator_lines = [l for l in lines if "---" in l]
+        separator_lines = [line for line in lines if "---" in line]
         assert len(separator_lines) >= 1
 
 
@@ -63,8 +61,6 @@ class TestExcelParserImportErrors:
 
     def test_xlsx_import_error_message(self, tmp_path, monkeypatch):
         """If openpyxl is not installed, should give clear error."""
-        import importlib
-        import sys
 
         f = tmp_path / "test.xlsx"
         f.write_bytes(b"fake xlsx content")

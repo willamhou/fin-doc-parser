@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 
 
@@ -26,14 +27,14 @@ async def parse_ocr(file_path: Path, *, backend: str = "auto") -> str:
     if backend == "prismer":
         return await _prismer_parse(file_path)
     if backend == "none":
-        return _text_extract(file_path)
+        return await asyncio.to_thread(_text_extract, file_path)
     raise ValueError(f"Unknown OCR backend: {backend}")
 
 
 async def _auto_parse(file_path: Path) -> str:
     """Auto: try text extraction first, fall back to PaddleOCR."""
     if file_path.suffix.lower() == ".pdf":
-        text = _text_extract(file_path)
+        text = await asyncio.to_thread(_text_extract, file_path)
         if text.strip() and len(text.strip()) > 100:
             return text
 
@@ -41,34 +42,48 @@ async def _auto_parse(file_path: Path) -> str:
 
 
 def _text_extract(file_path: Path) -> str:
-    """Extract text from PDF using PyMuPDF (no OCR)."""
+    """Extract text from PDF using PyMuPDF (no OCR). Blocking — call via to_thread."""
     try:
         import fitz  # PyMuPDF
-
-        doc = fitz.open(str(file_path))
-        pages = []
-        for page in doc:
-            pages.append(page.get_text())
-        doc.close()
-        return "\n\n".join(pages)
-    except ImportError:
+    except ImportError as err:
         raise ImportError(
             "PyMuPDF is required for PDF text extraction. "
             "Install with: pip install 'fin-doc-parser[pdf]'"
-        )
+        ) from err
+
+    doc = fitz.open(str(file_path))
+    pages = []
+    for page in doc:
+        pages.append(page.get_text())
+    doc.close()
+    return "\n\n".join(pages)
 
 
-async def _paddleocr_parse(file_path: Path) -> str:
-    """Parse using PaddleOCR (local)."""
-    try:
-        from paddleocr import PaddleOCR
-    except ImportError:
-        raise ImportError(
-            "PaddleOCR is required. "
-            "Install with: pip install 'fin-doc-parser[ocr]'"
-        )
+# ---------------------------------------------------------------------------
+# PaddleOCR — cached singleton to avoid reloading the model each call
+# ---------------------------------------------------------------------------
 
-    ocr = PaddleOCR(use_angle_cls=True, lang="ch", show_log=False)
+_paddleocr_instance = None
+
+
+def _get_paddleocr():
+    """Lazy singleton for PaddleOCR engine."""
+    global _paddleocr_instance
+    if _paddleocr_instance is None:
+        try:
+            from paddleocr import PaddleOCR
+        except ImportError as err:
+            raise ImportError(
+                "PaddleOCR is required. "
+                "Install with: pip install 'fin-doc-parser[ocr]'"
+            ) from err
+        _paddleocr_instance = PaddleOCR(use_angle_cls=True, lang="ch", show_log=False)
+    return _paddleocr_instance
+
+
+def _paddleocr_sync(file_path: Path) -> str:
+    """Run PaddleOCR synchronously. Blocking — call via to_thread."""
+    ocr = _get_paddleocr()
     result = ocr.ocr(str(file_path), cls=True)
 
     lines: list[str] = []
@@ -83,6 +98,16 @@ async def _paddleocr_parse(file_path: Path) -> str:
     return "\n".join(lines)
 
 
+async def _paddleocr_parse(file_path: Path) -> str:
+    """Parse using PaddleOCR (local). Runs in a thread to avoid blocking the loop."""
+    return await asyncio.to_thread(_paddleocr_sync, file_path)
+
+
+# ---------------------------------------------------------------------------
+# Prismer OCR service
+# ---------------------------------------------------------------------------
+
+
 async def _prismer_parse(file_path: Path) -> str:
     """Parse using Prismer OCR service (external)."""
     import os
@@ -94,18 +119,17 @@ async def _prismer_parse(file_path: Path) -> str:
             "for Prismer OCR backend."
         )
 
-    import asyncio
-
     import httpx
 
+    # Read file bytes in a thread to avoid blocking the event loop
+    file_bytes = await asyncio.to_thread(file_path.read_bytes)
+
     async with httpx.AsyncClient(base_url=base_url, timeout=120) as client:
-        # Submit task
-        with open(file_path, "rb") as f:
-            resp = await client.post(
-                "/parse",
-                files={"file": (file_path.name, f)},
-                data={"mode": "auto", "output": "markdown"},
-            )
+        resp = await client.post(
+            "/parse",
+            files={"file": (file_path.name, file_bytes)},
+            data={"mode": "auto", "output": "markdown"},
+        )
         resp.raise_for_status()
         task_id = resp.json().get("task_id")
 

@@ -10,7 +10,8 @@ _REGISTRY: dict[str, type[BaseExtractor]] = {}
 
 def register_extractor(cls: type[BaseExtractor]) -> type[BaseExtractor]:
     """Decorator to register an extractor."""
-    _REGISTRY[cls.doc_type.fget(cls)] = cls  # type: ignore[attr-defined]
+    instance = cls()
+    _REGISTRY[instance.doc_type] = cls
     return cls
 
 
@@ -38,6 +39,6 @@ def _ensure_registered() -> None:
         return
     _registered = True
 
-    import findocparser.extractors.financial_statement  # noqa: F401
     import findocparser.extractors.bank_statement  # noqa: F401
     import findocparser.extractors.business_license  # noqa: F401
+    import findocparser.extractors.financial_statement  # noqa: F401

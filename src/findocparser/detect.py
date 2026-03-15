@@ -11,7 +11,10 @@ _PDF_EXTENSIONS = {".pdf"}
 
 # Filename keyword → document type mapping
 _FILENAME_HINTS: list[tuple[list[str], str]] = [
-    (["资产负债", "利润表", "现金流", "财务报表", "balance", "income", "cash_flow"], "financial_statement"),
+    (
+        ["资产负债", "利润表", "现金流", "财务报表", "balance", "income", "cash_flow"],
+        "financial_statement",
+    ),
     (["银行流水", "bank_statement", "bank_flow"], "bank_statement"),
     (["营业执照", "business_license"], "business_license"),
     (["征信", "credit_report"], "credit_report"),
