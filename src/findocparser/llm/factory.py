@@ -20,6 +20,4 @@ def get_llm_client(provider: str = "deepseek", **kwargs) -> LLMClient:
         from findocparser.llm.openai_client import OpenAIClient
 
         return OpenAIClient(provider=provider, **kwargs)
-    raise ValueError(
-        f"Unknown LLM provider: {provider}. Supported: deepseek, openai"
-    )
+    raise ValueError(f"Unknown LLM provider: {provider}. Supported: deepseek, openai")

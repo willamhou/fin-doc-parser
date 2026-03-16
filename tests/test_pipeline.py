@@ -11,12 +11,14 @@ class TestPipelineWithCSV:
     async def test_csv_auto_detect(self, tmp_csv, mock_llm):
         from findocparser.api import parse_async
 
-        client = mock_llm(responses={
-            "金融文档": {
-                "document_type": "financial_data",
-                "summary": "CSV financial data",
-            },
-        })
+        client = mock_llm(
+            responses={
+                "金融文档": {
+                    "document_type": "financial_data",
+                    "summary": "CSV financial data",
+                },
+            }
+        )
 
         result = await parse_async(
             tmp_csv,
@@ -31,11 +33,13 @@ class TestPipelineWithCSV:
     async def test_csv_explicit_doc_type(self, tmp_csv, mock_llm):
         from findocparser.api import parse_async
 
-        client = mock_llm(responses={
-            "银行流水": {
-                "transactions": [{"date": "2024-01-01", "amount": 100}],
-            },
-        })
+        client = mock_llm(
+            responses={
+                "银行流水": {
+                    "transactions": [{"date": "2024-01-01", "amount": 100}],
+                },
+            }
+        )
 
         result = await parse_async(
             tmp_csv,
@@ -52,9 +56,11 @@ class TestPipelineWithCSV:
         csv_file = tmp_path / "资产负债表_2024.csv"
         csv_file.write_text("项目,金额\n总资产,100\n", encoding="utf-8")
 
-        client = mock_llm(responses={
-            "财务报表": {"total_assets": 100},
-        })
+        client = mock_llm(
+            responses={
+                "财务报表": {"total_assets": 100},
+            }
+        )
 
         result = await parse_async(csv_file, llm_client=client)
         assert result["doc_type"] == "financial_statement"

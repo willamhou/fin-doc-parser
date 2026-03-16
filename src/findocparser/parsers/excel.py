@@ -66,8 +66,7 @@ def _parse_xls(file_path: Path) -> str:
         import xlrd
     except ImportError as err:
         raise ImportError(
-            "xlrd is required for .xls files. "
-            "Install with: pip install 'fin-doc-parser[excel]'"
+            "xlrd is required for .xls files. Install with: pip install 'fin-doc-parser[excel]'"
         ) from err
 
     wb = xlrd.open_workbook(str(file_path))
@@ -111,8 +110,7 @@ def _parse_csv(file_path: Path) -> str:
             continue
     else:
         raise ValueError(
-            f"Cannot decode CSV file {file_path.name}. "
-            f"Tried encodings: {', '.join(_CSV_ENCODINGS)}"
+            f"Cannot decode CSV file {file_path.name}. Tried encodings: {', '.join(_CSV_ENCODINGS)}"
         )
 
     if not rows:

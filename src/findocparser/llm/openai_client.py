@@ -73,9 +73,7 @@ class OpenAIClient:
                 await asyncio.sleep(2**attempt)
                 continue
 
-        raise RuntimeError(
-            f"LLM API call failed after {self.max_retries} retries"
-        ) from last_exc
+        raise RuntimeError(f"LLM API call failed after {self.max_retries} retries") from last_exc
 
     async def _call_api(self, prompt: str) -> dict[str, Any]:
         """Single API call."""

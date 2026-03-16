@@ -74,8 +74,7 @@ def _get_paddleocr():
             from paddleocr import PaddleOCR
         except ImportError as err:
             raise ImportError(
-                "PaddleOCR is required. "
-                "Install with: pip install 'fin-doc-parser[ocr]'"
+                "PaddleOCR is required. Install with: pip install 'fin-doc-parser[ocr]'"
             ) from err
         _paddleocr_instance = PaddleOCR(use_angle_cls=True, lang="ch", show_log=False)
     return _paddleocr_instance
@@ -115,8 +114,7 @@ async def _prismer_parse(file_path: Path) -> str:
     base_url = os.environ.get("PRISMER_OCR_BASE_URL")
     if not base_url:
         raise ValueError(
-            "PRISMER_OCR_BASE_URL environment variable is required "
-            "for Prismer OCR backend."
+            "PRISMER_OCR_BASE_URL environment variable is required for Prismer OCR backend."
         )
 
     import httpx

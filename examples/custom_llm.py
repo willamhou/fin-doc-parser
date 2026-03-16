@@ -1,6 +1,5 @@
 """Custom LLM endpoint — use Ollama, vLLM, or any OpenAI-compatible API."""
 
-
 from findocparser import OpenAIClient, parse_async
 from findocparser.extractors.registry import get_extractor
 from findocparser.parsers.excel import parse_excel

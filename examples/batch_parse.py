@@ -7,10 +7,7 @@ from findocparser import parse_async
 
 async def batch_parse(file_paths: list[str], llm_provider: str = "deepseek"):
     """Parse multiple documents concurrently."""
-    tasks = [
-        parse_async(fp, llm_provider=llm_provider)
-        for fp in file_paths
-    ]
+    tasks = [parse_async(fp, llm_provider=llm_provider) for fp in file_paths]
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
     for fp, result in zip(file_paths, results, strict=False):

@@ -60,11 +60,13 @@ def compare_periods(
         prev_data = results[i - 1]["data"]
         curr_data = results[i]["data"]
         diff = _diff_dicts(prev_data, curr_data)
-        comparisons.append({
-            "from_period": periods[i - 1],
-            "to_period": periods[i],
-            **diff,
-        })
+        comparisons.append(
+            {
+                "from_period": periods[i - 1],
+                "to_period": periods[i],
+                **diff,
+            }
+        )
 
         # Collect significant changes
         _collect_significant(
@@ -155,12 +157,14 @@ def _collect_significant(
         if isinstance(value, dict):
             if "change_pct" in value and value["change_pct"] is not None:
                 if abs(value["change_pct"]) >= threshold:
-                    out.append({
-                        "field": path,
-                        "from_period": from_period,
-                        "to_period": to_period,
-                        **value,
-                    })
+                    out.append(
+                        {
+                            "field": path,
+                            "from_period": from_period,
+                            "to_period": to_period,
+                            **value,
+                        }
+                    )
             else:
                 # Nested dict without change_pct → recurse
                 _collect_significant(

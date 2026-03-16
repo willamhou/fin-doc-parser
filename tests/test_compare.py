@@ -41,12 +41,20 @@ class TestComparePeriodsOutput:
         assert len(result["comparisons"]) == 1
 
     def test_numeric_change(self):
-        r1 = _make_result("financial_statement", {
-            "balance_sheet": {"total_assets": 100_000_000},
-        }, "2023-12-31")
-        r2 = _make_result("financial_statement", {
-            "balance_sheet": {"total_assets": 125_000_000},
-        }, "2024-12-31")
+        r1 = _make_result(
+            "financial_statement",
+            {
+                "balance_sheet": {"total_assets": 100_000_000},
+            },
+            "2023-12-31",
+        )
+        r2 = _make_result(
+            "financial_statement",
+            {
+                "balance_sheet": {"total_assets": 125_000_000},
+            },
+            "2024-12-31",
+        )
         result = compare_periods([r1, r2])
 
         assets = result["comparisons"][0]["balance_sheet"]["total_assets"]
@@ -93,14 +101,22 @@ class TestComparePeriodsOutput:
         assert val["current"] is None
 
     def test_nested_dict_comparison(self):
-        r1 = _make_result("financial_statement", {
-            "balance_sheet": {"total_assets": 100, "total_liabilities": 60},
-            "income_statement": {"revenue": 200, "net_income": 30},
-        }, "2023")
-        r2 = _make_result("financial_statement", {
-            "balance_sheet": {"total_assets": 130, "total_liabilities": 70},
-            "income_statement": {"revenue": 250, "net_income": 45},
-        }, "2024")
+        r1 = _make_result(
+            "financial_statement",
+            {
+                "balance_sheet": {"total_assets": 100, "total_liabilities": 60},
+                "income_statement": {"revenue": 200, "net_income": 30},
+            },
+            "2023",
+        )
+        r2 = _make_result(
+            "financial_statement",
+            {
+                "balance_sheet": {"total_assets": 130, "total_liabilities": 70},
+                "income_statement": {"revenue": 250, "net_income": 45},
+            },
+            "2024",
+        )
         result = compare_periods([r1, r2])
         comp = result["comparisons"][0]
 
@@ -109,12 +125,20 @@ class TestComparePeriodsOutput:
         assert comp["income_statement"]["net_income"]["change_pct"] == 50.0
 
     def test_list_fields_show_counts(self):
-        r1 = _make_result("bank_statement", {
-            "transactions": [{"amount": 100}, {"amount": 200}],
-        }, "2023")
-        r2 = _make_result("bank_statement", {
-            "transactions": [{"amount": 100}, {"amount": 200}, {"amount": 300}],
-        }, "2024")
+        r1 = _make_result(
+            "bank_statement",
+            {
+                "transactions": [{"amount": 100}, {"amount": 200}],
+            },
+            "2023",
+        )
+        r2 = _make_result(
+            "bank_statement",
+            {
+                "transactions": [{"amount": 100}, {"amount": 200}, {"amount": 300}],
+            },
+            "2024",
+        )
         result = compare_periods([r1, r2])
 
         txn = result["comparisons"][0]["transactions"]
@@ -139,12 +163,20 @@ class TestComparePeriodsOutput:
 
 class TestSignificantChanges:
     def test_flags_above_threshold(self):
-        r1 = _make_result("financial_statement", {
-            "balance_sheet": {"total_assets": 100, "inventory": 50},
-        }, "2023")
-        r2 = _make_result("financial_statement", {
-            "balance_sheet": {"total_assets": 105, "inventory": 80},
-        }, "2024")
+        r1 = _make_result(
+            "financial_statement",
+            {
+                "balance_sheet": {"total_assets": 100, "inventory": 50},
+            },
+            "2023",
+        )
+        r2 = _make_result(
+            "financial_statement",
+            {
+                "balance_sheet": {"total_assets": 105, "inventory": 80},
+            },
+            "2024",
+        )
         result = compare_periods([r1, r2], significant_change_pct=20.0)
 
         sig = result["significant_changes"]

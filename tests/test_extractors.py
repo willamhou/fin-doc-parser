@@ -229,11 +229,19 @@ class TestPromptTemplate:
 
     def test_prompt_renders_without_error(self):
         """All extractors' prompts should render with content= kwarg."""
-        for doc_type in ["financial_statement", "bank_statement",
-                         "business_license", "audit_report",
-                         "credit_report", "shareholder_info",
-                         "financial_notes", "md_and_a",
-                         "guarantee", "equity_changes_stmt", "generic"]:
+        for doc_type in [
+            "financial_statement",
+            "bank_statement",
+            "business_license",
+            "audit_report",
+            "credit_report",
+            "shareholder_info",
+            "financial_notes",
+            "md_and_a",
+            "guarantee",
+            "equity_changes_stmt",
+            "generic",
+        ]:
             ext = get_extractor(doc_type)
             rendered = ext.prompt_template.format(content="test content 123")
             assert "test content 123" in rendered
