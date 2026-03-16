@@ -31,7 +31,7 @@ print(result["data"]["balance_sheet"]["total_assets"])  # 125000000.0
 
 ## Features
 
-- **13 document types** — financial statements, bank statements, business licenses, audit reports, credit reports, shareholder info, financial notes, MD&A, guarantees, equity changes, tax invoices, and more
+- **10+ document types** — financial statements, bank statements, business licenses, audit reports, credit reports, shareholder info, financial notes, MD&A, guarantees, equity changes, and more
 - **Pluggable OCR** — PaddleOCR (local, free), Prismer (GPU service), or text-only extraction
 - **Pluggable LLM** — DeepSeek, OpenAI, or any OpenAI-compatible API (Ollama, vLLM, etc.)
 - **Bring your own client** — pass a pre-configured `LLMClient` instance directly
@@ -227,10 +227,6 @@ diff = compare_periods([r2022, r2023, r2024])  # 返回 2 组逐期对比
 | MD&A | `md_and_a` | PDF | Business overview, operating results, risk factors, outlook |
 | Guarantee Disclosure | `guarantee` | PDF | Guarantee summary, details, violation guarantees |
 | Equity Changes Stmt | `equity_changes_stmt` | PDF | Opening/closing balance, changes, profit distribution |
-| Tax Invoice | `tax_invoice` | PDF, image, Excel | Invoice items, amounts, tax rates |
-| Fixed Asset | `fixed_asset` | Excel | Asset list with depreciation |
-| Lease Contract | `lease_contract` | PDF | Terms, amounts, maturity dates |
-| Property Cert | `property_cert` | PDF, image | Owner, location, area, registration |
 | *(any other)* | `generic` | PDF, image, Excel | Auto-extracted key entities & numbers |
 
 ## Architecture
