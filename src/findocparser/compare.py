@@ -102,6 +102,7 @@ def _diff_dicts(
             result[key] = _diff_dicts(pv, cv)
         # Both are numeric → compute change
         elif _is_numeric(pv) and _is_numeric(cv):
+            assert isinstance(pv, (int, float)) and isinstance(cv, (int, float))
             result[key] = _numeric_change(pv, cv)
         # One is numeric, other is None → partial comparison
         elif _is_numeric(pv) and cv is None:

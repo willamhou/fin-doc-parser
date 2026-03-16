@@ -1,7 +1,6 @@
 """Batch parsing — process multiple documents concurrently."""
 
 import asyncio
-from pathlib import Path
 
 from findocparser import parse_async
 
@@ -14,7 +13,7 @@ async def batch_parse(file_paths: list[str], llm_provider: str = "deepseek"):
     ]
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    for fp, result in zip(file_paths, results):
+    for fp, result in zip(file_paths, results, strict=False):
         if isinstance(result, Exception):
             print(f"  FAILED {fp}: {result}")
         else:
